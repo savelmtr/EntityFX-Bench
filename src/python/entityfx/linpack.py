@@ -1,4 +1,4 @@
-import time, math
+import time, math, array
 from entityfx.writer import Writer
 
 class Linpack:
@@ -28,10 +28,10 @@ class Linpack:
         residn_result = .0
         time_result = .0
         eps_result = .0
-        a = [[0] * array_size for i in range(array_size)]
-        b = [0] * array_size
-        x = [0] * array_size
-        ipvt = [0] * array_size
+        a = [array.array('d', [0] * array_size) for _ in range(array_size)]
+        b = array.array('d', [0] * array_size)
+        # x = [0] * array_size
+        ipvt = array.array('i', [0] * array_size)
         lda = array_size
         n = array_size
 
@@ -46,11 +46,11 @@ class Linpack:
 
         total = time.time() - start
 
-        x = [i for i in b]
+        x = array.array('d', [i for i in b])
 
         norma = self.__matgen(a, lda, n, b)
 
-        b = [-i for i in b]
+        b = array.array('d', [-i for i in b])
 
 
         self.__dmxpy(n, b, n, lda, x, a)

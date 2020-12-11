@@ -53,7 +53,7 @@ def write_result(bench_result) -> None:
                     bench_result["Iterrations"], bench_result["Ratio"])
     writer.write_line()
 
-bench_marks = [
+"""
     ArithemticsBenchmark(writer),
     ParallelArithemticsBenchmark(writer, True, enable_parallel),
 
@@ -83,12 +83,14 @@ bench_marks = [
 
     WhetstoneBenchmark(writer),
     ParallelWhetstoneBenchmark(writer, True, enable_parallel),
-
-    LinpackBenchmark(writer),
     ParallelLinpackBenchmark(writer, True, enable_parallel),
 
     HashBenchmark(writer),
     ParallelHashBenchmark(writer, True, enable_parallel)
+"""
+bench_marks = [
+
+    LinpackBenchmark(writer),
 ]
 
 total = 0
