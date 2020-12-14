@@ -29,7 +29,7 @@ class Linpack:
         time_result = .0
         eps_result = .0
         a = [array.array('d', [0] * array_size) for _ in range(array_size)]
-        b = array.array('d', [0] * array_size)
+        self.b = array.array('d', [0] * array_size)
         # x = [0] * array_size
         ipvt = array.array('i', [0] * array_size)
         lda = array_size
@@ -37,29 +37,29 @@ class Linpack:
 
         ops = 2.0e0 * n * n * n / 3.0 + 2.0 * n * n
 
-        norma = self.__matgen(a, lda, n, b)
+        norma = self.__matgen(a, lda, n)
 
         start = time.time()
 
         info = self.__dgefa(a, lda, n, ipvt)
-        self.__dgesl(a, lda, n, ipvt, b, 0)
+        self.__dgesl(a, lda, n, ipvt, self.b, 0)
 
         total = time.time() - start
 
-        x = array.array('d', [i for i in b])
+        x = array.array('d', [i for i in self.b])
 
-        norma = self.__matgen(a, lda, n, b)
+        norma = self.__matgen(a, lda, n)
 
         # b = array.array('d', [-i for i in b])
 
-        b = array.array('d', [sum([-b[i]] + [a[j][i] * x[j] for j in range(n)]) for i in range(n)])
+        self.b = array.array('d', [sum([-self.b[i]] + [a[j][i] * x[j] for j in range(n)]) for i in range(n)])
         # self.__dmxpy(n, b, n, lda, x, a)
 
         resid = .0
         normx = .0
 
         for i in range(n):
-            resid = resid if resid > self.__abs_(b[i]) else self.__abs_(b[i])
+            resid = resid if resid > self.__abs_(self.b[i]) else self.__abs_(self.b[i])
             normx = normx if normx > self.__abs_(x[i]) else self.__abs_(x[i])
 
         eps_result = self.__epslon(1.0)
@@ -96,7 +96,7 @@ class Linpack:
         }
         return result
     
-    def __matgen(self, a, lda : int, n : int, b) -> float:
+    def __matgen(self, a, lda : int, n : int) -> float:
         iseed = [1, 2, 3, 1325]
         norma = .0
         
@@ -105,14 +105,16 @@ class Linpack:
                 a[j][i] = (self.__lran(iseed) - .5)
                 norma = a[j][i] if a[j][i] > norma else norma
 
+        '''
         for i in range(n):
             b[i] = 0.0
 
-        #b = array.array('d', [sum([a[j][i] for j in range(n)]) for i in range(n)])
          
         for j in range(n):
             for i in range(n):
                 b[i] += a[j][i]
+        '''
+        self.b = array.array('d', [sum([a[j][i] for j in range(n)]) for i in range(n)])
         
         return norma
     

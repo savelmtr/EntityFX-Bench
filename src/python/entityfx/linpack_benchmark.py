@@ -10,7 +10,7 @@ class LinpackBenchmark(BenchmarkBase):
         self.ratio = 10
     
     def benchImplementation(self):
-        return self.__linpack.bench(10)
+        return self.__linpack.bench(1000)
     
     def populateResult(self, bench_result, linpack_result):
         bench_result["Points"] = linpack_result["MFLOPS"] * self.ratio
