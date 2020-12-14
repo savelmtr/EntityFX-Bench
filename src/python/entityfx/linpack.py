@@ -11,7 +11,7 @@ class Linpack:
     @staticmethod
     def main(args) -> None:
         array_size = 2000
-        if (len(args) > 0): 
+        if len(args) > 0: 
             try: 
                 array_size = int(args[0])
             except Exception as e0_: 
@@ -20,7 +20,7 @@ class Linpack:
         l_.bench(array_size)
     
     def __abs_(self, d : float) -> float:
-        return (d if (d >= 0) else - d)
+        return d if d >= 0 else - d
     
     def bench(self, array_size : int):
         self.__output.write_line("Running Linpack {0} x {0} in Python",  array_size)  
@@ -35,7 +35,7 @@ class Linpack:
         lda = array_size
         n = array_size
 
-        ops = ((2.0e0 * n) * n * n) / 3.0 + 2.0 * (n * n)
+        ops = 2.0e0 * n * n * n / 3.0 + 2.0 * n * n
 
         norma = self.__matgen(a, lda, n, b)
 
@@ -50,10 +50,10 @@ class Linpack:
 
         norma = self.__matgen(a, lda, n, b)
 
-        b = array.array('d', [-i for i in b])
+        # b = array.array('d', [-i for i in b])
 
-
-        self.__dmxpy(n, b, n, lda, x, a)
+        b = array.array('d', [sum([-b[i]] + [a[j][i] * x[j] for j in range(n)]) for i in range(n)])
+        # self.__dmxpy(n, b, n, lda, x, a)
 
         resid = .0
         normx = .0
@@ -63,28 +63,28 @@ class Linpack:
             normx = normx if normx > self.__abs_(x[i]) else self.__abs_(x[i])
 
         eps_result = self.__epslon(1.0)
-        residn_result = (resid / ((((n) * norma * normx) * eps_result)))
+        residn_result = resid / (n * norma * normx * eps_result)
         residn_result += .005
-        residn_result = (math.floor((residn_result * (100))))
-        residn_result /= (100)
+        residn_result = math.floor(residn_result * 100)
+        residn_result /= 100
         time_result = total
         time_result += .005
-        time_result = (math.floor((time_result * (100))))
-        time_result /= (100)
+        time_result = math.floor(time_result * 100)
+        time_result /= 100
 
         mflops_result = ops / (1.0e6 * total)
         mflops_result += .0005
-        mflops_result = (math.floor((mflops_result * (1000))))
-        mflops_result /= (1000)
+        mflops_result = math.floor(mflops_result * 1000)
+        mflops_result /= 1000
 
-        self.__output.write_line("Norma is {0}",norma)  
+        self.__output.write_line("Norma is {0}", norma)  
         self.__output.write_line("Residual is {0}", resid)
         self.__output.write_line("Normalised residual is {0}", residn_result)
         self.__output.write_line("Machine result.Eepsilon is {0}", eps_result)  
-        self.__output.write_line("x[0]-1 is {0}", ((x[0] - (1))))  
-        self.__output.write_line("x[n-1]-1 is {0}", ((x[n - 1] - (1))))  
-        self.__output.write_line("Time is {0}", (time_result))  
-        self.__output.write_line("MFLOPS: {0}", (mflops_result))  
+        self.__output.write_line("x[0]-1 is {0}", x[0] - 1)  
+        self.__output.write_line("x[n-1]-1 is {0}", x[n - 1] - 1)  
+        self.__output.write_line("Time is {0}", time_result)
+        self.__output.write_line("MFLOPS: {0}", mflops_result)  
         result = {
             "Norma" : norma,
             "Residual" : resid,
@@ -97,26 +97,23 @@ class Linpack:
         return result
     
     def __matgen(self, a, lda : int, n : int, b) -> float:
-        iseed = [0] * 4
-        iseed[0] = 1
-        iseed[1] = 2
-        iseed[2] = 3
-        iseed[3] = 1325
+        iseed = [1, 2, 3, 1325]
         norma = .0
         
         for i in range(n):
             for j in range(n):
                 a[j][i] = (self.__lran(iseed) - .5)
-                norma = (a[j][i] if (a[j][i] > norma) else norma)
+                norma = a[j][i] if a[j][i] > norma else norma
 
         for i in range(n):
             b[i] = 0.0
 
-            
+        #b = array.array('d', [sum([a[j][i] for j in range(n)]) for i in range(n)])
+         
         for j in range(n):
             for i in range(n):
                 b[i] += a[j][i]
-
+        
         return norma
     
     def __lran(self, seed) -> float:
@@ -227,14 +224,14 @@ class Linpack:
                     dy[i + dy_off] += da * dx[i + dx_off]
     
     def __ddot(self, n : int, dx, dx_off : int, incx : int, dy, dy_off : int, incy : int) -> float:
-        dtemp = (0)
-        if (n > 0): 
+        dtemp = 0
+        if n > 0: 
             if (incx != 1 or incy != 1): 
                 ix = 0
                 iy = 0
-                if (incx < 0): 
+                if incx < 0: 
                     ix = (- n + 1) * incx
-                if (incy < 0): 
+                if incy < 0: 
                     iy = (- n + 1) * incy
                 for i in range(n):
                     dtemp += dx[ix + dx_off] * dy[iy + dy_off]
@@ -247,8 +244,8 @@ class Linpack:
     
     def __dscal(self, n : int, da : float, dx, dx_off : int, incx : int) -> None:
         if (n > 0): 
-            if (incx != 1): 
-                nincx = (n * incx)
+            if incx != 1: 
+                nincx = n * incx
                 for i in range(0, nincx, incx):
                     dx[i + dx_off] *= da
             else: 
@@ -257,16 +254,16 @@ class Linpack:
     
     def __idamax(self, n : int, dx, dx_off : int, incx : int) -> int:
         itemp = 0
-        if (n < 1): 
+        if n < 1: 
             itemp = -1
-        elif (n == 1): 
+        elif n == 1: 
             itemp = 0
-        elif (incx != 1): 
+        elif incx != 1: 
             dmax = self.__abs_(dx[0 + dx_off])
-            ix = (1 + incx)
+            ix = 1 + incx
             for i in range(n):
                 dtemp = self.__abs_(dx[ix + dx_off])
-                if (dtemp > dmax): 
+                if dtemp > dmax: 
                     itemp = i
                     dmax = dtemp
                 ix += incx
@@ -287,11 +284,9 @@ class Linpack:
             b = (a - 1.0)
             c = 3*b
             eps = self.__abs_(c - 1.0)
-        return (eps * self.__abs_(x))
+        return eps * self.__abs_(x)
     
     def __dmxpy(self, n1 : int, y, n2 : int, ldm : int, x, m) -> None:
         for j in range(n2):
-            i = 0
             for i in range(n1): 
-                y[i] += (x[j] * m[j][i])
-                i += 1
+                y[i] += x[j] * m[j][i]
